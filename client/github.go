@@ -3,10 +3,15 @@ package client
 import (
 	"github.com/google/go-github/github"
 	"golang.org/x/oauth2"
-	"github.com/smartinov/globus-release/repository"
-	"fmt"
+	"github.com/smartinov/globus-releaser/repository"
 	"golang.org/x/net/context"
-	"strings"
+	"fmt"
+	"regexp"
+)
+
+const (
+	featureTicketRegex = "ECOMDEV-\\d+"
+	featureTicketLink  = "https://jira.globuswiki.com/browse/%s"
 )
 
 type githubClient struct {
@@ -33,13 +38,11 @@ func New(token string, repo repository.Interface) (Interface, error) {
 }
 
 func (c githubClient) CreateRelease(version string) error {
-	body := strings.Join(c.repository.GetMergedBranches(), "\n")
-
 	var data = &github.RepositoryRelease{
 		Name:            github.String("Release " + version),
 		TagName:         github.String(version),
 		TargetCommitish: github.String("release/" + version),
-		Body:            github.String(body),
+		Body:            github.String(c.getBody()),
 		Draft:           github.Bool(true),
 	}
 
@@ -47,6 +50,22 @@ func (c githubClient) CreateRelease(version string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Print(data)
 	return nil
+}
+
+func (c githubClient) getBody() string {
+	body := "\n## Branches "
+	for _, branch := range c.repository.GetMergedBranches() {
+		body += fmt.Sprintf("\n - [%s](%s) ", branch, calculateJiraLink(branch))
+	}
+	return body
+}
+
+func calculateJiraLink(branch string) string {
+	re := regexp.MustCompile(featureTicketRegex)
+	ticket := re.FindString(branch)
+	if ticket == "" {
+		return ""
+	}
+	return fmt.Sprintf(featureTicketLink, ticket)
 }

@@ -6,7 +6,7 @@ import (
 	"strings"
 	"fmt"
 	"regexp"
-	"github.com/smartinov/globus-release/repository"
+	"github.com/smartinov/globus-releaser/repository"
 )
 
 const (
@@ -39,6 +39,15 @@ func (r git) GetName() string {
 	return re.FindStringSubmatch(r.getRemote())[2]
 }
 
+func (r git) GetCurrentBranch() string {
+	output, err := r.executeGit("rev-parse", "--abbrev-ref", "HEAD")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return output[0]
+}
+
 func (r git) GetMergedBranches() []string {
 	output, err := r.executeGit("branch", "-r", "--merged")
 	if err != nil {
@@ -68,13 +77,7 @@ func (r git) getRemote() string {
 }
 
 func (r git) executeGit(arguments ... string) ([]string, error) {
-	return execute(r.dir, "git", arguments...)
-}
-
-var execute = func(dir, commandName string, command ... string) ([]string, error) {
-	cmd := exec.Command(commandName, command...)
-	cmd.Dir = dir
-	output, err := cmd.CombinedOutput()
+	output, err := execute(r.dir, "git", arguments...)
 	if err != nil {
 		return []string{}, err
 	}
@@ -82,6 +85,11 @@ var execute = func(dir, commandName string, command ... string) ([]string, error
 	for i := range lines {
 		lines[i] = strings.Trim(lines[i], " ")
 	}
-
 	return lines, err
+}
+
+var execute = func(dir, commandName string, command ... string) ([]byte, error) {
+	cmd := exec.Command(commandName, command...)
+	cmd.Dir = dir
+	return cmd.CombinedOutput()
 }

@@ -3,9 +3,14 @@ package git
 import (
 	"testing"
 	"github.com/stretchr/testify/assert"
+	"strings"
 )
 
-var originalExecute func(dir, name string, args ...string) ([]string, error)
+const (
+	repositoryDirectory = "/www/globus"
+)
+
+var originalExecute func(dir, name string, args ...string) ([]byte, error)
 
 func setup() {
 	originalExecute = execute
@@ -19,18 +24,18 @@ func TestGit_GetRepositoryURL(t *testing.T) {
 	setup()
 	defer teardown()
 
-	execute = func(dir, name string, args ...string) ([]string, error) {
+	execute = func(dir, name string, args ...string) ([]byte, error) {
 		assert.Equal(t, "git", name)
 		assert.Equal(t, "remote", args[0])
 		assert.Equal(t, "-v", args[1])
-		assert.Equal(t, "/www/globus", dir)
-		return []string{
+		assert.Equal(t, repositoryDirectory, dir)
+		return []byte(strings.Join([]string{
 			"origin	git@github.com:bestbytes/globus.git (fetch)",
 			"origin	git@github.com:bestbytes/globus.git (push)",
-		}, nil
+		}, "\n")), nil
 	}
 
-	repo, _ := NewRepository("/www/globus")
+	repo, _ := NewRepository(repositoryDirectory)
 	url := repo.GetRepositoryURL()
 	assert.Equal(t, "https://github.com/bestbytes/globus", url)
 }
@@ -39,22 +44,22 @@ func TestGit_GetMergedBranches(t *testing.T) {
 	setup()
 	defer teardown()
 
-	execute = func(dir, name string, args ...string) ([]string, error) {
+	execute = func(dir, name string, args ...string) ([]byte, error) {
 		assert.Equal(t, "git", name)
 		assert.Equal(t, "branch", args[0])
 		assert.Equal(t, "-r", args[1])
 		assert.Equal(t, "--merged", args[2])
-		assert.Equal(t, "/www/globus", dir)
-		return []string{
+		assert.Equal(t, repositoryDirectory, dir)
+		return []byte(strings.Join([]string{
 			"origin/develop",
 			"origin/feature/ECOMDEV-1-invalidate",
 			"origin/feature/ECOMDEV-2-storefinder",
 			"origin/feature/ECOMDEV-3-manual",
 			"origin/release/1.20.0",
-		}, nil
+		}, "\n")), nil
 	}
 
-	repo, _ := NewRepository("/www/globus")
+	repo, _ := NewRepository(repositoryDirectory)
 	branches := repo.GetMergedBranches()
 
 	assert.Equal(t, 3, len(branches))
@@ -67,14 +72,14 @@ func TestGit_GetOwner(t *testing.T) {
 	setup()
 	defer teardown()
 
-	execute = func(dir, name string, args ...string) ([]string, error) {
-		return []string{
+	execute = func(dir, name string, args ...string) ([]byte, error) {
+		return []byte(strings.Join([]string{
 			"origin	git@github.com:bestbytes/globus.git (fetch)",
 			"origin	git@github.com:bestbytes/globus.git (push)",
-		}, nil
+		}, "\n")), nil
 	}
 
-	repo, _ := NewRepository("/www/globus")
+	repo, _ := NewRepository(repositoryDirectory)
 	owner := repo.GetOwner()
 
 	assert.Equal(t, "bestbytes", owner)
@@ -84,15 +89,34 @@ func TestGit_GetName(t *testing.T) {
 	setup()
 	defer teardown()
 
-	execute = func(dir, name string, args ...string) ([]string, error) {
-		return []string{
+	execute = func(dir, name string, args ...string) ([]byte, error) {
+		return []byte(strings.Join([]string{
 			"origin	git@github.com:bestbytes/globus.git (fetch)",
 			"origin	git@github.com:bestbytes/globus.git (push)",
-		}, nil
+		}, "\n")), nil
 	}
 
-	repo, _ := NewRepository("/www/globus")
+	repo, _ := NewRepository(repositoryDirectory)
 	name := repo.GetName()
 
 	assert.Equal(t, "globus", name)
+}
+
+func TestGit_GetCurrentBranch(t *testing.T) {
+	setup()
+	defer teardown()
+
+	execute = func(dir, name string, args ...string) ([]byte, error) {
+		assert.Equal(t, "git", name)
+		assert.Equal(t, "rev-parse", args[0])
+		assert.Equal(t, "--abbrev-ref", args[1])
+		assert.Equal(t, "HEAD", args[2])
+		assert.Equal(t, repositoryDirectory, dir)
+		return []byte("release/123"), nil
+	}
+
+	repo, _ := NewRepository(repositoryDirectory)
+	branch := repo.GetCurrentBranch()
+
+	assert.Equal(t, "release/123", branch)
 }

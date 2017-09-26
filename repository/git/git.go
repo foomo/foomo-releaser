@@ -6,7 +6,7 @@ import (
 	"strings"
 	"fmt"
 	"regexp"
-	"github.com/smartinov/globus-releaser/repository"
+	"github.com/foomo/foomo-releaser/repository"
 	"errors"
 )
 

@@ -1,7 +1,7 @@
 # .goreleaser.yml
 # Build customization
 builds:
-  - binary: globus-releaser
+  - binary: foomo-releaser
     main:   ./releaser.go
     env:
         - CGO_ENABLED=0
@@ -23,8 +23,8 @@ brew:
   # Reporitory to push the tap to.
   github:
     owner: foomo
-    name: homebrew-globus-releaser
+    name: homebrew-foomo-releaser
 
-  caveats: "globus-releaser -t {TOKEN} -d {DIRECTORY} -v {VERSION}"
-  homepage: "https://github.com/bestbytes/globus-releaser"
-  description: "CLI Utility to generate releases for the globus project"
+  caveats: "foomo-releaser -t {TOKEN} -d {DIRECTORY} -v {VERSION}"
+  homepage: "https://github.com/foomo/foomo-releaser"
+  description: "CLI Utility to generate releases for foomo-related projects"

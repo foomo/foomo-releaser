@@ -3,7 +3,7 @@ package client
 import (
 	"github.com/google/go-github/github"
 	"golang.org/x/oauth2"
-	"github.com/smartinov/globus-releaser/repository"
+	"github.com/foomo/foomo-releaser/repository"
 	"golang.org/x/net/context"
 	"fmt"
 	"regexp"

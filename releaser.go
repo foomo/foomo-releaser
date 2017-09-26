@@ -2,11 +2,11 @@ package main
 
 import (
 	"flag"
-	"github.com/smartinov/globus-releaser/client"
+	"github.com/foomo/foomo-releaser/client"
 	"os"
 	"path/filepath"
 	"log"
-	"github.com/smartinov/globus-releaser/repository/git"
+	"github.com/foomo/foomo-releaser/repository/git"
 	"fmt"
 )
 

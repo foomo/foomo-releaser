@@ -1,0 +1,30 @@
+# .goreleaser.yml
+# Build customization
+builds:
+  - binary: releaser
+    main:   ./releaser.go
+    env:
+        - CGO_ENABLED=0
+    goos:
+      - windows
+      - darwin
+      - linux
+    goarch:
+      - amd64
+
+# .goreleaser.yml
+archive:
+  format: tar.gz
+  format_overrides:
+    - goos: windows
+      format: zip
+
+brew:
+  # Reporitory to push the tap to.
+  github:
+    owner: foomo
+    name: homebrew-globus-releaser
+
+  caveats: "releaser -t {TOKEN} -d {DIRECTORY} -v {VERSION}"
+  homepage: "https://github.com/bestbytes/globus-releaser"
+  description: "CLI Utility to generate releases in"

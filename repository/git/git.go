@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"regexp"
 	"github.com/smartinov/globus-releaser/repository"
+	"errors"
 )
 
 const (
@@ -22,7 +23,11 @@ type git struct {
 var _ repository.Interface = git{}
 
 func NewRepository(directory string) (repository.Interface, error) {
-	return git{dir: directory}, nil
+	repo := git{dir: directory}
+	if !repo.isValidGitRepository() {
+		return nil, errors.New("specified directory is not a valid git repository")
+	}
+	return repo, nil
 }
 
 func (r git) GetRepositoryURL() string {
@@ -61,6 +66,11 @@ func (r git) GetMergedBranches() []string {
 		}
 	}
 	return branches
+}
+
+func (r git) isValidGitRepository() bool {
+	_, err := r.executeGit("rev-parse")
+	return err == nil
 }
 
 func (r git) getRemote() string {

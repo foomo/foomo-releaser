@@ -4,6 +4,7 @@ import (
 	"testing"
 	"github.com/stretchr/testify/assert"
 	"strings"
+	"errors"
 )
 
 const (
@@ -25,9 +26,6 @@ func TestGit_GetRepositoryURL(t *testing.T) {
 	defer teardown()
 
 	execute = func(dir, name string, args ...string) ([]byte, error) {
-		assert.Equal(t, "git", name)
-		assert.Equal(t, "remote", args[0])
-		assert.Equal(t, "-v", args[1])
 		assert.Equal(t, repositoryDirectory, dir)
 		return []byte(strings.Join([]string{
 			"origin	git@github.com:bestbytes/globus.git (fetch)",
@@ -45,10 +43,6 @@ func TestGit_GetMergedBranches(t *testing.T) {
 	defer teardown()
 
 	execute = func(dir, name string, args ...string) ([]byte, error) {
-		assert.Equal(t, "git", name)
-		assert.Equal(t, "branch", args[0])
-		assert.Equal(t, "-r", args[1])
-		assert.Equal(t, "--merged", args[2])
 		assert.Equal(t, repositoryDirectory, dir)
 		return []byte(strings.Join([]string{
 			"origin/develop",
@@ -107,10 +101,6 @@ func TestGit_GetCurrentBranch(t *testing.T) {
 	defer teardown()
 
 	execute = func(dir, name string, args ...string) ([]byte, error) {
-		assert.Equal(t, "git", name)
-		assert.Equal(t, "rev-parse", args[0])
-		assert.Equal(t, "--abbrev-ref", args[1])
-		assert.Equal(t, "HEAD", args[2])
 		assert.Equal(t, repositoryDirectory, dir)
 		return []byte("release/123"), nil
 	}
@@ -119,4 +109,17 @@ func TestGit_GetCurrentBranch(t *testing.T) {
 	branch := repo.GetCurrentBranch()
 
 	assert.Equal(t, "release/123", branch)
+}
+
+func TestNewRepositoryErr(t *testing.T) {
+	setup()
+	defer teardown()
+
+	execute = func(dir, name string, args ...string) ([]byte, error) {
+		return nil, errors.New("NOUP")
+	}
+
+	_, err := NewRepository(repositoryDirectory)
+	assert.NotNil(t, err)
+
 }

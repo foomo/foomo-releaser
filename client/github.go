@@ -7,6 +7,8 @@ import (
 	"golang.org/x/net/context"
 	"fmt"
 	"regexp"
+	"strings"
+	"log"
 )
 
 const (
@@ -38,6 +40,13 @@ func New(token string, repo repository.Interface) (Interface, error) {
 }
 
 func (c githubClient) CreateRelease(version string) error {
+	branch := strings.Split(c.repository.GetCurrentBranch(), "/")
+
+	if !(len(branch) == 2 && branch[0] == "release" && branch[1] == version) {
+		msg := "the specified repository needs to be set on release/%s for the scirpt to work, current branch '%s'"
+		log.Fatalf(msg, version,c.repository.GetCurrentBranch())
+	}
+
 	var data = &github.RepositoryRelease{
 		Name:            github.String("Release " + version),
 		TagName:         github.String(version),

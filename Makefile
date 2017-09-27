@@ -4,7 +4,7 @@ build:
 
 .PHONY: release
 release: goreleaser glide
-	goreleaser --rm-distg
+	goreleaser --rm-dist
 
 .PHONY: goreleaser
 goreleaser:

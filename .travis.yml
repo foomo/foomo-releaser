@@ -1,0 +1,14 @@
+language: go
+go:
+  - 1.9.x
+
+cache:
+  directories:
+    - ./vendor
+
+branches:
+  only:
+  - master
+
+script:
+  -  make release

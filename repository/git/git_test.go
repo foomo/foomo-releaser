@@ -62,38 +62,43 @@ func TestGit_GetMergedBranches(t *testing.T) {
 	assert.Equal(t, "feature/ECOMDEV-3-manual", branches[2])
 }
 
-func TestGit_GetOwner(t *testing.T) {
-	setup()
-	defer teardown()
-
-	execute = func(dir, name string, args ...string) ([]byte, error) {
-		return []byte(strings.Join([]string{
-			"origin	git@github.com:bestbytes/globus.git (fetch)",
-			"origin	git@github.com:bestbytes/globus.git (push)",
-		}, "\n")), nil
-	}
-
-	repo, _ := NewRepository(repositoryDirectory)
-	owner := repo.GetOwner()
-
-	assert.Equal(t, "bestbytes", owner)
+var getRepositoryInformationTestSet = []struct {
+	in    []string
+	owner string
+	name  string
+}{
+	{
+		in:    []string{"origin	git@github.com:bestbytes/globus.git (fetch)", "origin	git@github.com:bestbytes/globus.git (push)"},
+		owner: "bestbytes",
+		name:  "globus",
+	},
+	{
+		in:    []string{"origin	git@github.com:bestbytes/globus-services.git (fetch)", "origin	git@github.com:bestbytes/globus-services.git (push)"},
+		owner: "bestbytes",
+		name:  "globus-services",
+	},
+	{
+		in:    []string{"origin	git@github.com:foomo-owner/gotsrpc.git (fetch)", "origin	git@github.com:foomo-owner/gotsrpc.git (push)"},
+		owner: "foomo-owner",
+		name:  "gotsrpc",
+	},
 }
 
-func TestGit_GetName(t *testing.T) {
+func TestGit_RepositoryInformationTestSet(t *testing.T) {
 	setup()
 	defer teardown()
 
-	execute = func(dir, name string, args ...string) ([]byte, error) {
-		return []byte(strings.Join([]string{
-			"origin	git@github.com:bestbytes/globus.git (fetch)",
-			"origin	git@github.com:bestbytes/globus.git (push)",
-		}, "\n")), nil
+	for i, v := range getRepositoryInformationTestSet {
+		execute = func(dir, name string, args ...string) ([]byte, error) {
+			return []byte(strings.Join(v.in, "\n")), nil
+		}
+
+		repo, _ := NewRepository(repositoryDirectory)
+
+		assert.Equal(t, v.owner, repo.GetOwner(), "mismatch owner at index %d", i)
+		assert.Equal(t, v.name, repo.GetName(), "mismatch name at index %d", i)
 	}
 
-	repo, _ := NewRepository(repositoryDirectory)
-	name := repo.GetName()
-
-	assert.Equal(t, "globus", name)
 }
 
 func TestGit_GetCurrentBranch(t *testing.T) {

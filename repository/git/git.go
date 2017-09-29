@@ -12,7 +12,7 @@ import (
 
 const (
 	githubTemplate           = "https://github.com/%s/%s"
-	remoteRepositoryTemplate = "git@github.com:(\\w+)/(\\w+).git"
+	remoteRepositoryTemplate = "git@github.com:([\\w-]+)/([\\w-]+).git"
 	mergedBranchesPrefix     = "feature/"
 )
 
